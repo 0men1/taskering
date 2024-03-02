@@ -1,0 +1,47 @@
+[
+	{
+		"Title": "My Tasks",
+		"Tasks": [
+			{
+				"Id": "Z3RnSlJ2LVlydTBvdk1OQQ",
+				"Title": "CS401: HW3",
+				"Due": "2024-03-04T00:00:00.000Z",
+				"SelfLink": "https://www.googleapis.com/tasks/v1/lists/MDU0NDg0NzMzNzA1MDIyMzUxMzU6MDow/tasks/Z3RnSlJ2LVlydTBvdk1OQQ",
+				"Status": "needsAction",
+				"Notes": ""
+			},
+			{
+				"Id": "RU1mQzJRWkZkNkZxbTI3bA",
+				"Title": "MUS114: WORK",
+				"Due": "2024-03-17T00:00:00.000Z",
+				"SelfLink": "https://www.googleapis.com/tasks/v1/lists/MDU0NDg0NzMzNzA1MDIyMzUxMzU6MDow/tasks/RU1mQzJRWkZkNkZxbTI3bA",
+				"Status": "needsAction",
+				"Notes": "Music 114 weekly work"
+			},
+			{
+				"Id": "TS0zd2xnc0UtV19PZ3dsRQ",
+				"Title": "Utilitarianism reflection questions",
+				"Due": "2024-03-14T00:00:00.000Z",
+				"SelfLink": "https://www.googleapis.com/tasks/v1/lists/MDU0NDg0NzMzNzA1MDIyMzUxMzU6MDow/tasks/TS0zd2xnc0UtV19PZ3dsRQ",
+				"Status": "needsAction",
+				"Notes": "Answer questions 4 and 5 at the end of chapter 2."
+			},
+			{
+				"Id": "RldNdmhvNXpqcVFGa1RnSQ",
+				"Title": "Communitarianism Reflection Questions",
+				"Due": "2024-03-14T00:00:00.000Z",
+				"SelfLink": "https://www.googleapis.com/tasks/v1/lists/MDU0NDg0NzMzNzA1MDIyMzUxMzU6MDow/tasks/RldNdmhvNXpqcVFGa1RnSQ",
+				"Status": "needsAction",
+				"Notes": "Answer questions 10 and 11 at the end of chapter 2."
+			},
+			{
+				"Id": "Ym1tT3Z5QnJaNGxqWml4cQ",
+				"Title": "Contemporary Developments Reflection Questions",
+				"Due": "2024-03-07T00:00:00.000Z",
+				"SelfLink": "https://www.googleapis.com/tasks/v1/lists/MDU0NDg0NzMzNzA1MDIyMzUxMzU6MDow/tasks/Ym1tT3Z5QnJaNGxqWml4cQ",
+				"Status": "needsAction",
+				"Notes": "Answer question 13 at the end of chapter 2."
+			}
+		]
+	}
+]

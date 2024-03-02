@@ -1,0 +1,178 @@
+[
+	{
+		"Summary": "Holidays in United States",
+		"Id": "en.usa#holiday@group.v.calendar.google.com",
+		"Description": "Holidays and Observances in United States",
+		"Events": [
+			{
+				"Summary": "First Day of Women's History Month",
+				"Start": {
+					"date": "2024-03-01"
+				},
+				"EndTime": null
+			},
+			{
+				"Summary": "Daylight Saving Time starts",
+				"Start": {
+					"date": "2024-03-10"
+				},
+				"EndTime": null
+			},
+			{
+				"Summary": "St. Patrick's Day",
+				"Start": {
+					"date": "2024-03-17"
+				},
+				"EndTime": null
+			},
+			{
+				"Summary": "Easter Sunday",
+				"Start": {
+					"date": "2024-03-31"
+				},
+				"EndTime": null
+			},
+			{
+				"Summary": "Easter Monday",
+				"Start": {
+					"date": "2024-04-01"
+				},
+				"EndTime": null
+			},
+			{
+				"Summary": "Tax Day",
+				"Start": {
+					"date": "2024-04-15"
+				},
+				"EndTime": null
+			},
+			{
+				"Summary": "First Day of Asian Pacific American Heritage Month",
+				"Start": {
+					"date": "2024-05-01"
+				},
+				"EndTime": null
+			},
+			{
+				"Summary": "Cinco de Mayo",
+				"Start": {
+					"date": "2024-05-05"
+				},
+				"EndTime": null
+			},
+			{
+				"Summary": "Mother's Day",
+				"Start": {
+					"date": "2024-05-12"
+				},
+				"EndTime": null
+			},
+			{
+				"Summary": "Memorial Day",
+				"Start": {
+					"date": "2024-05-27"
+				},
+				"EndTime": null
+			}
+		]
+	},
+	{
+		"Summary": "homahomen2@gmail.com",
+		"Id": "homahomen2@gmail.com",
+		"Description": "",
+		"Events": []
+	},
+	{
+		"Summary": "Classes",
+		"Id": "7e05f9e5ac886c725d1c41944acba2bb69eb15ad9bd8f341d8d0161f58883c48@group.calendar.google.com",
+		"Description": "",
+		"Events": [
+			{
+				"Summary": "MATH220: LEC",
+				"Start": {
+					"dateTime": "2024-03-01T13:00:00-06:00",
+					"timeZone": "America/Chicago"
+				},
+				"EndTime": null
+			},
+			{
+				"Summary": "MATH310: LCD",
+				"Start": {
+					"dateTime": "2024-03-01T15:00:00-06:00",
+					"timeZone": "America/Chicago"
+				},
+				"EndTime": null
+			},
+			{
+				"Summary": "CS401: LCD",
+				"Start": {
+					"dateTime": "2024-03-04T11:00:00-06:00",
+					"timeZone": "America/Chicago"
+				},
+				"EndTime": null
+			},
+			{
+				"Summary": "MATH220: LEC",
+				"Start": {
+					"dateTime": "2024-03-04T13:00:00-06:00",
+					"timeZone": "America/Chicago"
+				},
+				"EndTime": null
+			},
+			{
+				"Summary": "MATH310: LCD",
+				"Start": {
+					"dateTime": "2024-03-04T15:00:00-06:00",
+					"timeZone": "America/Chicago"
+				},
+				"EndTime": null
+			},
+			{
+				"Summary": "CS377: LCD",
+				"Start": {
+					"dateTime": "2024-03-05T11:00:00-06:00",
+					"timeZone": "America/Chicago"
+				},
+				"EndTime": null
+			},
+			{
+				"Summary": "CS342: LCD",
+				"Start": {
+					"dateTime": "2024-03-05T17:00:00-06:00",
+					"timeZone": "America/Chicago"
+				},
+				"EndTime": null
+			},
+			{
+				"Summary": "CS401: LCD",
+				"Start": {
+					"dateTime": "2024-03-06T11:00:00-06:00",
+					"timeZone": "America/Chicago"
+				},
+				"EndTime": null
+			},
+			{
+				"Summary": "MATH220: LEC",
+				"Start": {
+					"dateTime": "2024-03-06T13:00:00-06:00",
+					"timeZone": "America/Chicago"
+				},
+				"EndTime": null
+			},
+			{
+				"Summary": "MATH310: LCD",
+				"Start": {
+					"dateTime": "2024-03-06T15:00:00-06:00",
+					"timeZone": "America/Chicago"
+				},
+				"EndTime": null
+			}
+		]
+	},
+	{
+		"Summary": "Exams",
+		"Id": "4126f9efde404e2eae6f31b33dde21b84cea3d6b01c9959364b4e22e11a756f2@group.calendar.google.com",
+		"Description": "",
+		"Events": []
+	}
+]
