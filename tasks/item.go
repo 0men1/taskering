@@ -2,7 +2,6 @@ package tasks
 
 
 type Categories struct {
-	CatMap       map[int][]Item
 	CatList      []Category
 	CurrentIndex int
 	Size	     int
@@ -12,6 +11,7 @@ type Categories struct {
 type Category struct {
 	Title string
 	Id    string
+	Items []Item
 }
 
 

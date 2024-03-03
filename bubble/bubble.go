@@ -3,7 +3,6 @@ package bubble
 
 import (
 	"tsk/bubble/list"
-	"fmt"
 	tea "github.com/charmbracelet/bubbletea"
 	"tsk/bubble/styles"
 	tsktasks "tsk/tasks"
@@ -35,11 +34,5 @@ func Run() {
 		model: list.New(c),
 	}
 
-	p := tea.NewProgram(m, tea.WithAltScreen())
-
-	_, err := p.Run()
-	
-	if err != nil {
-		fmt.Println("Error running program: %v", err)
-	}
+	tea.NewProgram(m, tea.WithAltScreen()).Run()
 }

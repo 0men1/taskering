@@ -4,17 +4,13 @@ import (
 	"tsk/api"
 	"google.golang.org/api/tasks/v1"
 	"encoding/json"
-	"os"
-	"fmt"
 	"log"
 )
 
 
 var AllCategories = Categories{
-	CatMap:       make(map[int][]Item),
 	CatList:      []Category{},
 	CurrentIndex: 0,
-	Size:	      0,
 }
 
 
@@ -22,10 +18,9 @@ func makeCategory(tasklist *tasks.TaskList, tasks []Item) Categories {
 	c := Category {
 		Title: tasklist.Title,
 		Id:    tasklist.Id,    
+		Items: tasks,
 	}
-	AllCategories.CatMap[AllCategories.Size] = tasks
 	AllCategories.CatList = append(AllCategories.CatList, c)
-	AllCategories.Size++
 
 	return AllCategories
 }
@@ -42,44 +37,20 @@ func makeItem(task *tasks.Task) Item {
 	return t
 }
 
+
 func Init() (*Categories){
 	srv,_  := api.GetSrvs()
 	return FindTasks(srv)
 }
 
 
-func saveTasks(path string, taskLists []Category) {
-	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
-	if err != nil {
-		log.Fatalf("There was an error opening file %s: %v\n",
-		path, err)
-	}
-	defer f.Close()
-	fmt.Printf("Saving tasks to %s\n", path)
-	b, _:= json.MarshalIndent(taskLists, "", "	")
-	f.Write(b)
-}
-
-
 func FindTasks(srv *tasks.Service) (*Categories) {
-	/*
-	_, err := os.Stat("userdata")
-	if err != nil {
-		err := os.Mkdir("userdata", 0777)
-		if err != nil {
-			log.Fatalf("Couldn't make the userdata directory: %v", err)
-		}
-	}
-
-	taskFile := "userdata/tasks.json"
-	*/
-
 	tasklists, err := srv.Tasklists.List().MaxResults(5).Do()
 	if err != nil {
-		fmt.Println("Unable to retrieve the tasklists: %v\n", err)
+		log.Fatalf("Unable to retrieve the tasklists: %v\n", err)
 	}
 	if len(tasklists.Items) == 0 {
-		fmt.Println("Could not find tasklists")
+		log.Fatalf("Could not find tasklists")
 	} else {
 		for _, tasklist := range tasklists.Items {
 			allTasks := []Item{}
@@ -95,8 +66,6 @@ func FindTasks(srv *tasks.Service) (*Categories) {
 			makeCategory(tasklist, allTasks)
 		}
 	}
-
-//	saveTasks(taskFile, allTaskLists)
 	return &AllCategories
 }
 

@@ -5,3 +5,5 @@ import (
 )
 
 var Style = lipgloss.NewStyle().Bold(true)
+
+var CatStyle = lipgloss.NewStyle().Underline(true)
