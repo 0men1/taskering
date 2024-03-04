@@ -14,7 +14,6 @@ type Model struct {
 	cursor     int
 	catcursor  int
 	selected   map[int]map[int]struct{}	
-	chosenKey  string
 }
 
 
@@ -35,7 +34,6 @@ func (m *Model) Update(msg tea.Msg) (*Model, tea.Cmd) {
     switch msg := msg.(type) {
 
     case tea.KeyMsg:
-	m.chosenKey = msg.String()
 	switch msg.String() {
 
         case "ctrl+c", "q":
@@ -85,8 +83,7 @@ func (m *Model) Update(msg tea.Msg) (*Model, tea.Cmd) {
 
 
 func (m *Model) View() string {
-    s := "What should we buy at the market?\n\n"
-	chosenkey := m.chosenKey
+    s := "--------------------TODO LIST--------------------\n\n"
 
     s += m.SetCategoryString() + "\n\n"
 
@@ -102,7 +99,9 @@ func (m *Model) View() string {
             checked = "x" // selected!
         }
 
-	s += fmt.Sprintf(("Chosen key: %s\n %s [%s] %s\n"),chosenkey, cursor, checked, choice.Title)
+	s += fmt.Sprintf((" %s [%s] %s\n"), cursor, checked, choice.Title)
+	s += fmt.Sprintf("          Due: %s\n\n\n", choice.Due)
+
     }
     s += "\nPress q to quit.\n"
     return s
@@ -124,5 +123,9 @@ func (m *Model) SetCategoryString() (string) {
 	}
 	return s
 }
+
+
+
+
 
 
