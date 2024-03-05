@@ -3,8 +3,8 @@ package api
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
+	"fmt"
 	"net/http"
 	"os"
 	"golang.org/x/oauth2"
@@ -17,15 +17,14 @@ import (
 
 
 
-func GetSrvs() (*tasks.Service, *calendar.Service) {
+func GetSrvs() (*tasks.Service) {
 	ctx := MakeContext()
 	b := ReadCreds()
-	config := GetConfig(b, tasks.TasksScope, calendar.CalendarScope)
+	config := GetConfig(b, tasks.TasksScope)
 	client := GetClient(config)
 
 	tasksrv, _     := tasks.NewService(ctx, option.WithHTTPClient(client))
-	calendarsrv, _ := calendar.NewService(ctx, option.WithHTTPClient(client)) 
-	return tasksrv, calendarsrv
+	return tasksrv
 }
 
 
@@ -58,7 +57,7 @@ func GetCalendarSrv(ctx context.Context, opts option.ClientOption) (*calendar.Se
 }
 
 func GetConfig(jsonKey []byte, scope ...string) (*oauth2.Config) {
-	conf, err := google.ConfigFromJSON(jsonKey, scope[0], scope[1]); if err != nil {
+	conf, err := google.ConfigFromJSON(jsonKey, scope[0]); if err != nil {
 		log.Fatalf("There was an error fetching config: %v", err)
 	}
 	return conf
@@ -82,7 +81,7 @@ func GetClient(config *oauth2.Config) *http.Client {
 // Request a token from the web, then returns the retrieved token.
 func GetTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
-	fmt.Printf("Go to the following link in your browser then copy paste the "+
+	log.Printf("Go to the following link in your browser then copy paste the "+
 		"url you were redirected to.: \n%v\n", authURL)
 		
 	var link string

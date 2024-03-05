@@ -6,6 +6,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"tsk/bubble/styles"
 	tsktasks "tsk/tasks"
+	"github.com/charmbracelet/bubbles/textinput"
+
 )
 
 type model struct{
@@ -13,7 +15,7 @@ type model struct{
 }
 
 func (m model) Init() tea.Cmd {
-	return nil
+	return textinput.Blink
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd)  {

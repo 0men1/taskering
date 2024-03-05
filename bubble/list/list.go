@@ -4,16 +4,30 @@ import (
 	"fmt"
 	tea "github.com/charmbracelet/bubbletea"
 	tsktasks "tsk/tasks"
+	"time"
+	"strings"
 	"tsk/bubble/styles"
+	"github.com/charmbracelet/bubbles/viewport"
+	"github.com/charmbracelet/bubbles/textinput"
 )
 
 
 type Model struct {
-	Categories tsktasks.Categories
-	Items 	   []tsktasks.Item
-	cursor     int
-	catcursor  int
-	selected   map[int]map[int]struct{}	
+	Categories 	tsktasks.Categories
+	Items 	   	[]tsktasks.Item
+
+	entryMode  	bool	   
+	inputs	   	[]textinput.Model
+	newInsert  	bool
+	
+
+	cursor     	int
+	catcursor	int
+	inputcursor 	int
+
+
+	selected   	map[int]map[int]struct{}	
+	viewport 	viewport.Model
 }
 
 
@@ -21,9 +35,41 @@ func New(c *tsktasks.Categories) *Model {
 	m := Model {
 		Categories: *c,
 		Items: c.CatList[c.CurrentIndex].Items,
+
 		cursor: 0,
 		catcursor: 0,
+		inputcursor: 0,
+
 		selected: make(map[int]map[int]struct{}),
+		inputs: make([]textinput.Model, 6),
+	}
+
+	
+	for i := range m.inputs {
+		var t textinput.Model
+		t = textinput.New()
+		switch i {
+		case 0:
+			t.Placeholder = "Title"
+			t.CharLimit = 30
+			t.Focus()
+		case 1:
+			t.Placeholder = "dd"
+			t.CharLimit = 2
+		case 2:
+			t.Placeholder = "mm"
+			t.CharLimit = 2
+		case 3:
+			t.Placeholder = "yyyy"
+			t.CharLimit = 4
+		case 4:
+			t.Placeholder = "tt:tt"
+			t.CharLimit = 5
+		case 5:
+			t.Placeholder = "Notes..."
+			t.CharLimit = 100
+		}
+		m.inputs[i] = t
 	}
 
 	return &m
@@ -31,81 +77,167 @@ func New(c *tsktasks.Categories) *Model {
 
 
 func (m *Model) Update(msg tea.Msg) (*Model, tea.Cmd) {
-    switch msg := msg.(type) {
+	var cmds []tea.Cmd = make([]tea.Cmd, len(m.inputs))
 
-    case tea.KeyMsg:
-	switch msg.String() {
+    	switch msg := msg.(type) {
+    	case tea.KeyMsg:
+		
+		switch msg.Type {
+		case tea.KeyShiftTab:
+			m.prevInput()
+	
+		case tea.KeyTab:
+			m.nextInput()
 
-        case "ctrl+c", "q":
-            return m, tea.Quit
+			for i := range m.inputs {
+				m.inputs[i].Blur()
+			}
 
-    	case "left", "h":
-		if (m.catcursor > 0) {
-			m.catcursor--
-			m.cursor = 0
-			m.SetItems()
+			m.inputs[m.inputcursor].Focus()
 		}
 
-	case "right", "l":
-		if (m.catcursor < len(m.Categories.CatList)-1) {
-			m.catcursor++
-			m.cursor = 0
-			m.SetItems()
+
+		switch msg.String() {
+        	case "ctrl+c":
+            		return m, tea.Quit
+		case "q":
+			if(!m.entryMode) {
+				return m, tea.Quit
+			}
+
+		case "left", "h" :
+			if (m.catcursor > 0 && !m.entryMode) {
+				m.catcursor--
+				m.cursor = 0
+				m.SetItems()
+			}
+
+		case "right", "l":
+			if (m.catcursor < len(m.Categories.CatList)-1 && !m.entryMode) {
+				m.catcursor++
+				m.cursor = 0
+				m.SetItems()
+			}
+
+		case "up", "k":
+		    if m.cursor > 0 && !m.entryMode {
+			m.cursor--
+		    }
+
+		case "down", "j":
+		    if m.cursor < len(m.Items)-1 && !m.entryMode {
+			m.cursor++
+		    }
+
+		case "enter", " ":
+			if (!m.entryMode) {
+			    if _, ok := m.selected[m.catcursor]; !ok { // Initialize the map of int structs if it doesnt exist
+				m.selected[m.catcursor] = make(map[int]struct{})
+			    }
+
+			    _, ok := m.selected[m.catcursor][m.cursor]
+			    if ok {
+				delete(m.selected[m.catcursor], m.cursor)
+			    } else {
+				m.selected[m.catcursor][m.cursor] = struct{}{}
+			    }
+			} else {
+				if (msg.String() != " ") {
+					m.entryMode = false
+					m.newInsert = true
+					//m.newEntry(m.inputs)
+				}
+			}	
+		case "+":
+			m.entryMode = true
+
+		case "esc":
+			if m.entryMode{
+				m.entryMode = false
+			}
 		}
-
-        case "up", "k":
-            if m.cursor > 0 {
-                m.cursor--
-            }
-
-        case "down", "j":
-            if m.cursor < len(m.Items)-1 {
-                m.cursor++
-            }
-
-        case "enter", " ":
-
-	    if _, ok := m.selected[m.catcursor]; !ok { // Initialize the map of int structs if it doesnt exist
-		m.selected[m.catcursor] = make(map[int]struct{})
-	    }
-
-            _, ok := m.selected[m.catcursor][m.cursor]
-            if ok {
-                delete(m.selected[m.catcursor], m.cursor)
-            } else {
-                m.selected[m.catcursor][m.cursor] = struct{}{}
-            }
-        }
     }
-    return m, nil
+
+    for i := range m.inputs {
+	m.inputs[i], cmds[i] = m.inputs[i].Update(msg)
+
+    }
+
+   return m, tea.Batch(cmds...)
 }
 
 
+/*
+func (m *Model) newEntry(params []textinput.Model) (bool) {
+	title := params[0].Value
+	day   := params[1].Value
+	month := params[2].Value
+	year  := params[3].Value
+	time  := params[4].Value
+	return true
+}
+*/
 
 func (m *Model) View() string {
     s := "--------------------TODO LIST--------------------\n\n"
 
     s += m.SetCategoryString() + "\n\n"
 
-    for i, choice := range m.Items {
 
+    for i, choice := range m.Items {
         cursor := " " // no cursor
         if m.cursor == i {
             cursor = ">" // cursor!
         }
-
         checked := " " // not selected
         if _, ok := m.selected[m.catcursor][i]; ok {
             checked = "x" // selected!
         }
 
 	s += fmt.Sprintf((" %s [%s] %s\n"), cursor, checked, choice.Title)
-	s += fmt.Sprintf("          Due: %s\n\n\n", choice.Due)
 
+
+	t, err := time.Parse(time.RFC3339, choice.Due)
+	clockTime := strings.Split(choice.Due, "T")[1]
+	clockTime = strings.Split(clockTime, "Z")[0]
+
+
+	if err != nil {
+		s += fmt.Sprintf("00:00:00")
+	} else {
+		s += fmt.Sprintf("          Due:%s  %s, %d %d @ %s\n\n\n", 
+		clockTime,
+		t.Month(),
+		t.Day(),
+		t.Year(),
+		t.Format(clockTime))
+	}
     }
-    s += "\nPress q to quit.\n"
-    return s
+
+
+	if (m.entryMode) {
+		s += fmt.Sprintf(`
+		%s
+
+		%s %s %s %s
+
+		%s
+		`, 			       
+			m.inputs[0].View(), 
+			m.inputs[1].View(),
+			m.inputs[2].View(), 
+			m.inputs[3].View(), 
+			m.inputs[4].View(), 
+			m.inputs[5].View())
+	}
+
+	s += "\n"
+	s += "\nPress q to quit.\n"
+	return s
 }
+
+
+
 
 func (m *Model) SetItems() {
 	m.Items = m.Categories.CatList[m.catcursor].Items	
@@ -126,6 +258,14 @@ func (m *Model) SetCategoryString() (string) {
 
 
 
+func (m *Model) nextInput() {
+	m.inputcursor = (m.inputcursor + 1) % len(m.inputs)
+}
 
-
+func (m *Model) prevInput() {
+	m.inputcursor--
+	if m.inputcursor < 0 {
+		m.inputcursor = len(m.inputs) - 1
+	}
+}
 

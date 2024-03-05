@@ -14,6 +14,27 @@ var AllCategories = Categories{
 }
 
 
+var task_srv *tasks.Service
+
+
+func MakeTask(title string, due string, notes string) (*tasks.Task) {
+	myTask := tasks.Task {
+		Title: title,
+		Due: due,
+		Notes: notes,
+	}
+	return &myTask	
+}
+
+
+func InsertTask(taskId string, task *tasks.Task) {
+	ok := task_srv.Tasks.Insert(taskId, task)
+	if ok == nil {
+		log.Fatalf("There was an error creating task\n")	
+	}
+}
+
+
 func makeCategory(tasklist *tasks.TaskList, tasks []Item) Categories {
 	c := Category {
 		Title: tasklist.Title,
@@ -28,18 +49,24 @@ func makeCategory(tasklist *tasks.TaskList, tasks []Item) Categories {
 
 func makeItem(task *tasks.Task) Item {
 	var t Item
+
 	tB, err := json.Marshal(task); if err != nil {
 		log.Fatalf("There was an error Marshalling task: %v", err)
 	}
+
+	log.Println(task)
+
+
 	if err = json.Unmarshal([]byte(tB), &t); err != nil {
 		log.Fatalf("There was an error Unmarshalling task: %v", err)
 	}
+
 	return t
 }
 
 
 func Init() (*Categories){
-	srv,_  := api.GetSrvs()
+	srv  := api.GetSrvs()
 	return FindTasks(srv)
 }
 
@@ -57,6 +84,7 @@ func FindTasks(srv *tasks.Service) (*Categories) {
 			tasks, err := srv.Tasks.List(tasklist.Id).MaxResults(30).Do() 
 			if err != nil {
 				log.Fatalf("Unable to retrive the next 30 tasks from tasklist %s: %v\n", 
+				
 				tasklist.Title, 
 				err)
 			}

@@ -1,11 +1,14 @@
 package main
 
 import (
-	"tsk/bubble"
+	//"tsk/bubble"
+	"tsk/tasks"
 )
 
 
 func main() {
-	bubble.Run()	
+	tasks.Init()	
+
+	//bubble.Run()	
 }
 
