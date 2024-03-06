@@ -1,11 +1,11 @@
 package list 
 
 import (
-	"fmt"
 	tea "github.com/charmbracelet/bubbletea"
 	tsktasks "tsk/tasks"
 	"time"
-	"strings"
+	"google.golang.org/api/tasks/v1"
+	"fmt"
 	"tsk/bubble/styles"
 	"github.com/charmbracelet/bubbles/viewport"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -14,12 +14,10 @@ import (
 
 type Model struct {
 	Categories 	tsktasks.Categories
-	Items 	   	[]tsktasks.Item
+	//Items 	   	[]tsktasks.Item
 
 	entryMode  	bool	   
 	inputs	   	[]textinput.Model
-	newInsert  	bool
-	
 
 	cursor     	int
 	catcursor	int
@@ -34,14 +32,14 @@ type Model struct {
 func New(c *tsktasks.Categories) *Model {
 	m := Model {
 		Categories: *c,
-		Items: c.CatList[c.CurrentIndex].Items,
+	//	Items: c.CatList[c.CurrentIndex].Items,
 
 		cursor: 0,
 		catcursor: 0,
 		inputcursor: 0,
 
 		selected: make(map[int]map[int]struct{}),
-		inputs: make([]textinput.Model, 6),
+		inputs: make([]textinput.Model, 5),
 	}
 
 	
@@ -54,18 +52,15 @@ func New(c *tsktasks.Categories) *Model {
 			t.CharLimit = 30
 			t.Focus()
 		case 1:
-			t.Placeholder = "dd"
+			t.Placeholder = "dd (# only)"
 			t.CharLimit = 2
 		case 2:
-			t.Placeholder = "mm"
+			t.Placeholder = "mm (# only)"
 			t.CharLimit = 2
 		case 3:
-			t.Placeholder = "yyyy"
+			t.Placeholder = "yyyy (# only)"
 			t.CharLimit = 4
 		case 4:
-			t.Placeholder = "tt:tt"
-			t.CharLimit = 5
-		case 5:
 			t.Placeholder = "Notes..."
 			t.CharLimit = 100
 		}
@@ -79,21 +74,16 @@ func New(c *tsktasks.Categories) *Model {
 func (m *Model) Update(msg tea.Msg) (*Model, tea.Cmd) {
 	var cmds []tea.Cmd = make([]tea.Cmd, len(m.inputs))
 
+
     	switch msg := msg.(type) {
     	case tea.KeyMsg:
-		
 		switch msg.Type {
+			
 		case tea.KeyShiftTab:
 			m.prevInput()
 	
 		case tea.KeyTab:
 			m.nextInput()
-
-			for i := range m.inputs {
-				m.inputs[i].Blur()
-			}
-
-			m.inputs[m.inputcursor].Focus()
 		}
 
 
@@ -109,14 +99,12 @@ func (m *Model) Update(msg tea.Msg) (*Model, tea.Cmd) {
 			if (m.catcursor > 0 && !m.entryMode) {
 				m.catcursor--
 				m.cursor = 0
-				m.SetItems()
 			}
 
 		case "right", "l":
 			if (m.catcursor < len(m.Categories.CatList)-1 && !m.entryMode) {
 				m.catcursor++
 				m.cursor = 0
-				m.SetItems()
 			}
 
 		case "up", "k":
@@ -125,7 +113,7 @@ func (m *Model) Update(msg tea.Msg) (*Model, tea.Cmd) {
 		    }
 
 		case "down", "j":
-		    if m.cursor < len(m.Items)-1 && !m.entryMode {
+		    if m.cursor < len(m.visibleItems())-1 && !m.entryMode {
 			m.cursor++
 		    }
 
@@ -141,13 +129,12 @@ func (m *Model) Update(msg tea.Msg) (*Model, tea.Cmd) {
 			    } else {
 				m.selected[m.catcursor][m.cursor] = struct{}{}
 			    }
-			} else {
-				if (msg.String() != " ") {
+
+			} else if msg.String() != " " {
 					m.entryMode = false
-					m.newInsert = true
-					//m.newEntry(m.inputs)
-				}
-			}	
+					//m.insertItem()
+			}
+
 		case "+":
 			m.entryMode = true
 
@@ -158,25 +145,19 @@ func (m *Model) Update(msg tea.Msg) (*Model, tea.Cmd) {
 		}
     }
 
-    for i := range m.inputs {
-	m.inputs[i], cmds[i] = m.inputs[i].Update(msg)
+	for i := range m.inputs {
+		m.inputs[i].Blur()
+	}
+	m.inputs[m.inputcursor].Focus()
+	
+	for i := range m.inputs {
+		m.inputs[i], cmds[i] = m.inputs[i].Update(msg)
 
-    }
+	}
 
    return m, tea.Batch(cmds...)
 }
 
-
-/*
-func (m *Model) newEntry(params []textinput.Model) (bool) {
-	title := params[0].Value
-	day   := params[1].Value
-	month := params[2].Value
-	year  := params[3].Value
-	time  := params[4].Value
-	return true
-}
-*/
 
 func (m *Model) View() string {
     s := "--------------------TODO LIST--------------------\n\n"
@@ -184,7 +165,7 @@ func (m *Model) View() string {
     s += m.SetCategoryString() + "\n\n"
 
 
-    for i, choice := range m.Items {
+    for i, choice := range m.visibleItems() {
         cursor := " " // no cursor
         if m.cursor == i {
             cursor = ">" // cursor!
@@ -198,19 +179,14 @@ func (m *Model) View() string {
 
 
 	t, err := time.Parse(time.RFC3339, choice.Due)
-	clockTime := strings.Split(choice.Due, "T")[1]
-	clockTime = strings.Split(clockTime, "Z")[0]
-
 
 	if err != nil {
-		s += fmt.Sprintf("00:00:00")
+		s += fmt.Sprintf("Could not get the due date!")
 	} else {
-		s += fmt.Sprintf("          Due:%s  %s, %d %d @ %s\n\n\n", 
-		clockTime,
+		s += fmt.Sprintf("          Due: %s, %d %d \n\n\n", 
 		t.Month(),
 		t.Day(),
-		t.Year(),
-		t.Format(clockTime))
+		t.Year())
 	}
     }
 
@@ -219,7 +195,7 @@ func (m *Model) View() string {
 		s += fmt.Sprintf(`
 		%s
 
-		%s %s %s %s
+		%s %s %s 
 
 		%s
 		`, 			       
@@ -227,8 +203,7 @@ func (m *Model) View() string {
 			m.inputs[1].View(),
 			m.inputs[2].View(), 
 			m.inputs[3].View(), 
-			m.inputs[4].View(), 
-			m.inputs[5].View())
+			m.inputs[4].View())
 	}
 
 	s += "\n"
@@ -238,11 +213,23 @@ func (m *Model) View() string {
 
 
 
+func (m *Model) insertItem() {
+	title := m.inputs[0].Value()
+	due := m.inputs[3].Value() + "-" + m.inputs[2].Value() + "-" + m.inputs[1].Value() + "T00:00:00Z"
+	notes := m.inputs[4].Value()
 
-func (m *Model) SetItems() {
-	m.Items = m.Categories.CatList[m.catcursor].Items	
+	for i := range m.inputs {
+		m.inputs[i].Update("")
+	}
+
+	myTask := tasks.Task {
+		Title: title,
+		Due: due,
+		Notes: notes,
+	}
+
+	fmt.Println(myTask)
 }
-
 
 func (m *Model) SetCategoryString() (string) {
 	s := "Categories:\n"
@@ -258,6 +245,7 @@ func (m *Model) SetCategoryString() (string) {
 
 
 
+
 func (m *Model) nextInput() {
 	m.inputcursor = (m.inputcursor + 1) % len(m.inputs)
 }
@@ -268,4 +256,16 @@ func (m *Model) prevInput() {
 		m.inputcursor = len(m.inputs) - 1
 	}
 }
+
+
+func (m *Model) visibleItems() []tsktasks.Item {
+	return m.Categories.CatList[m.catcursor].Items
+}
+
+
+
+
+
+
+
 

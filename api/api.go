@@ -22,8 +22,7 @@ func GetSrvs() (*tasks.Service) {
 	b := ReadCreds()
 	config := GetConfig(b, tasks.TasksScope)
 	client := GetClient(config)
-
-	tasksrv, _     := tasks.NewService(ctx, option.WithHTTPClient(client))
+	tasksrv, _ := tasks.NewService(ctx, option.WithHTTPClient(client))
 	return tasksrv
 }
 

@@ -17,6 +17,12 @@ var AllCategories = Categories{
 var task_srv *tasks.Service
 
 
+func Init() (*Categories){
+	srv  := api.GetSrvs()
+	return FindTasks(srv)
+}
+
+
 func MakeTask(title string, due string, notes string) (*tasks.Task) {
 	myTask := tasks.Task {
 		Title: title,
@@ -27,11 +33,21 @@ func MakeTask(title string, due string, notes string) (*tasks.Task) {
 }
 
 
-func InsertTask(taskId string, task *tasks.Task) {
-	ok := task_srv.Tasks.Insert(taskId, task)
-	if ok == nil {
-		log.Fatalf("There was an error creating task\n")	
+func InsertTask(taskListId string, task *tasks.Task) *tasks.Task {
+
+
+	callback := task_srv.Tasks.Insert(taskListId, task)
+	if callback == nil {
+		return nil
 	}
+
+	task, err := callback.Do()
+
+	if err != nil {
+		log.Fatalf("There was an error making task: %v", err)
+	}
+
+	return task
 }
 
 
@@ -54,9 +70,6 @@ func makeItem(task *tasks.Task) Item {
 		log.Fatalf("There was an error Marshalling task: %v", err)
 	}
 
-	log.Println(task)
-
-
 	if err = json.Unmarshal([]byte(tB), &t); err != nil {
 		log.Fatalf("There was an error Unmarshalling task: %v", err)
 	}
@@ -65,10 +78,6 @@ func makeItem(task *tasks.Task) Item {
 }
 
 
-func Init() (*Categories){
-	srv  := api.GetSrvs()
-	return FindTasks(srv)
-}
 
 
 func FindTasks(srv *tasks.Service) (*Categories) {
@@ -76,6 +85,7 @@ func FindTasks(srv *tasks.Service) (*Categories) {
 	if err != nil {
 		log.Fatalf("Unable to retrieve the tasklists: %v\n", err)
 	}
+
 	if len(tasklists.Items) == 0 {
 		log.Fatalf("Could not find tasklists")
 	} else {
@@ -84,7 +94,6 @@ func FindTasks(srv *tasks.Service) (*Categories) {
 			tasks, err := srv.Tasks.List(tasklist.Id).MaxResults(30).Do() 
 			if err != nil {
 				log.Fatalf("Unable to retrive the next 30 tasks from tasklist %s: %v\n", 
-				
 				tasklist.Title, 
 				err)
 			}
