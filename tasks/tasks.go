@@ -18,8 +18,17 @@ var task_srv *tasks.Service
 
 
 func Init() (*Categories){
-	srv  := api.GetSrvs()
-	return FindTasks(srv)
+	task_srv = api.GetSrvs()
+	return FindTasks(task_srv)
+}
+
+
+func RefreshFull() (*Categories) {
+	if task_srv == nil {
+		log.Fatalf("Task service was not initialized")
+	}
+
+	return FindTasks(task_srv)
 }
 
 
@@ -34,20 +43,13 @@ func MakeTask(title string, due string, notes string) (*tasks.Task) {
 
 
 func InsertTask(taskListId string, task *tasks.Task) *tasks.Task {
-
-
-	callback := task_srv.Tasks.Insert(taskListId, task)
-	if callback == nil {
-		return nil
-	}
-
-	task, err := callback.Do()
+	newTask, err := task_srv.Tasks.Insert(taskListId, task).Do()
 
 	if err != nil {
-		log.Fatalf("There was an error making task: %v", err)
+		log.Fatalf("There was an error inserting the task: %v", err)
 	}
 
-	return task
+	return newTask
 }
 
 
@@ -91,7 +93,7 @@ func FindTasks(srv *tasks.Service) (*Categories) {
 	} else {
 		for _, tasklist := range tasklists.Items {
 			allTasks := []Item{}
-			tasks, err := srv.Tasks.List(tasklist.Id).MaxResults(30).Do() 
+			tasks, err := srv.Tasks.List(tasklist.Id).MaxResults(10).Do() 
 			if err != nil {
 				log.Fatalf("Unable to retrive the next 30 tasks from tasklist %s: %v\n", 
 				tasklist.Title, 

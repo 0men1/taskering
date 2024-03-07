@@ -14,7 +14,6 @@ import (
 
 type Model struct {
 	Categories 	tsktasks.Categories
-	//Items 	   	[]tsktasks.Item
 
 	entryMode  	bool	   
 	inputs	   	[]textinput.Model
@@ -32,7 +31,6 @@ type Model struct {
 func New(c *tsktasks.Categories) *Model {
 	m := Model {
 		Categories: *c,
-	//	Items: c.CatList[c.CurrentIndex].Items,
 
 		cursor: 0,
 		catcursor: 0,
@@ -75,25 +73,42 @@ func (m *Model) Update(msg tea.Msg) (*Model, tea.Cmd) {
 	var cmds []tea.Cmd = make([]tea.Cmd, len(m.inputs))
 
 
+	if m.entryMode {
+		for i := range m.inputs {
+			m.inputs[i], cmds[i] = m.inputs[i].Update(msg)
+		}
+	}
+
+
     	switch msg := msg.(type) {
     	case tea.KeyMsg:
-		switch msg.Type {
-			
-		case tea.KeyShiftTab:
-			m.prevInput()
-	
-		case tea.KeyTab:
-			m.nextInput()
-		}
 
+		switch msg.Type {
+
+		case tea.KeyShiftTab:
+			if m.entryMode {
+				m.prevInput()
+				m.refocus()
+			}
+		case tea.KeyTab:
+			if m.entryMode {
+				m.nextInput()
+				m.refocus()
+			}
+		}
 
 		switch msg.String() {
         	case "ctrl+c":
             		return m, tea.Quit
+
+
+
 		case "q":
 			if(!m.entryMode) {
 				return m, tea.Quit
 			}
+
+
 
 		case "left", "h" :
 			if (m.catcursor > 0 && !m.entryMode) {
@@ -101,59 +116,66 @@ func (m *Model) Update(msg tea.Msg) (*Model, tea.Cmd) {
 				m.cursor = 0
 			}
 
+
+
 		case "right", "l":
 			if (m.catcursor < len(m.Categories.CatList)-1 && !m.entryMode) {
 				m.catcursor++
 				m.cursor = 0
 			}
 
+
+
 		case "up", "k":
 		    if m.cursor > 0 && !m.entryMode {
 			m.cursor--
 		    }
+
+
 
 		case "down", "j":
 		    if m.cursor < len(m.visibleItems())-1 && !m.entryMode {
 			m.cursor++
 		    }
 
+
+
 		case "enter", " ":
-			if (!m.entryMode) {
+
+
+			if !m.entryMode {
 			    if _, ok := m.selected[m.catcursor]; !ok { // Initialize the map of int structs if it doesnt exist
 				m.selected[m.catcursor] = make(map[int]struct{})
 			    }
-
 			    _, ok := m.selected[m.catcursor][m.cursor]
 			    if ok {
 				delete(m.selected[m.catcursor], m.cursor)
 			    } else {
 				m.selected[m.catcursor][m.cursor] = struct{}{}
 			    }
-
-			} else if msg.String() != " " {
-					m.entryMode = false
-					//m.insertItem()
 			}
+
+			    if m.entryMode && msg.String() != " "{
+				m.insertItemIntoCalendar()
+				m.entryMode = false
+				m.refocus()
+			    }
+
 
 		case "+":
 			m.entryMode = true
 
+
 		case "esc":
 			if m.entryMode{
 				m.entryMode = false
+				m.refocus()
 			}
-		}
+
+
+	}
     }
 
-	for i := range m.inputs {
-		m.inputs[i].Blur()
-	}
-	m.inputs[m.inputcursor].Focus()
-	
-	for i := range m.inputs {
-		m.inputs[i], cmds[i] = m.inputs[i].Update(msg)
-
-	}
 
    return m, tea.Batch(cmds...)
 }
@@ -213,23 +235,37 @@ func (m *Model) View() string {
 
 
 
-func (m *Model) insertItem() {
+func (m *Model) insertItemIntoCalendar() {
 	title := m.inputs[0].Value()
 	due := m.inputs[3].Value() + "-" + m.inputs[2].Value() + "-" + m.inputs[1].Value() + "T00:00:00Z"
 	notes := m.inputs[4].Value()
 
-	for i := range m.inputs {
-		m.inputs[i].Update("")
-	}
-
-	myTask := tasks.Task {
+	myTask := &tasks.Task {
 		Title: title,
 		Due: due,
 		Notes: notes,
 	}
 
-	fmt.Println(myTask)
+
+	newTask := tsktasks.InsertTask(m.Categories.CatList[m.catcursor].Id, myTask)
+
+	m.insertItemIntoModel(*newTask)
 }
+
+func (m *Model) insertItemIntoModel(task tasks.Task) {
+	myItem := tsktasks.Item {
+		Id: task.Id,
+		Title: task.Title,
+		Due: task.Due,
+		Link: task.SelfLink,
+		Status: task.Status,
+		Notes: task.Notes,
+	}
+	m.Categories.CatList[m.catcursor].Items = append(m.Categories.CatList[m.catcursor].Items, myItem)
+}
+
+
+
 
 func (m *Model) SetCategoryString() (string) {
 	s := "Categories:\n"
@@ -257,15 +293,26 @@ func (m *Model) prevInput() {
 	}
 }
 
+func (m *Model) refocus() {
+	for i := range m.inputs {
+		if !m.entryMode {
+			m.inputs[i].Blur()
+			m.inputs[i].SetValue("")
+		} else if i != m.inputcursor && m.entryMode {
+			m.inputs[i].Blur()
+		}
+	}
+
+	if !m.entryMode {
+		m.inputcursor = 0
+		m.inputs[0].Focus()
+	} else {
+		m.inputs[m.inputcursor].Focus()
+	}
+
+}
 
 func (m *Model) visibleItems() []tsktasks.Item {
 	return m.Categories.CatList[m.catcursor].Items
 }
-
-
-
-
-
-
-
 
