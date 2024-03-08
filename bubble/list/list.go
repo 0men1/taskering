@@ -40,6 +40,12 @@ func New(c *tsktasks.Categories) *Model {
 		inputs: make([]textinput.Model, 5),
 	}
 
+
+	//Initialize the map of selected ints
+	for i := range m.Categories.CatList {
+		m.selected[i] = make(map[int]struct{})	
+	}
+
 	
 	for i := range m.inputs {
 		var t textinput.Model
@@ -141,25 +147,21 @@ func (m *Model) Update(msg tea.Msg) (*Model, tea.Cmd) {
 
 
 		case "enter", " ":
-
-
 			if !m.entryMode {
-			    if _, ok := m.selected[m.catcursor]; !ok { // Initialize the map of int structs if it doesnt exist
-				m.selected[m.catcursor] = make(map[int]struct{})
-			    }
-			    _, ok := m.selected[m.catcursor][m.cursor]
-			    if ok {
-				delete(m.selected[m.catcursor], m.cursor)
-			    } else {
-				m.selected[m.catcursor][m.cursor] = struct{}{}
-			    }
+				_, ok := m.selected[m.catcursor][m.cursor]
+
+				if ok {
+					delete(m.selected[m.catcursor], m.cursor)
+				} else {
+					m.selected[m.catcursor][m.cursor] = struct{}{}
+				}
 			}
 
-			    if m.entryMode && msg.String() != " "{
+			if m.entryMode && msg.String() != " "{
 				m.insertItemIntoCalendar()
 				m.entryMode = false
 				m.refocus()
-			    }
+			}
 
 
 		case "+":
@@ -198,7 +200,6 @@ func (m *Model) View() string {
         }
 
 	s += fmt.Sprintf((" %s [%s] %s\n"), cursor, checked, choice.Title)
-
 
 	t, err := time.Parse(time.RFC3339, choice.Due)
 
@@ -246,25 +247,15 @@ func (m *Model) insertItemIntoCalendar() {
 		Notes: notes,
 	}
 
-
 	newTask := tsktasks.InsertTask(m.Categories.CatList[m.catcursor].Id, myTask)
 
 	m.insertItemIntoModel(*newTask)
 }
 
+
 func (m *Model) insertItemIntoModel(task tasks.Task) {
-	myItem := tsktasks.Item {
-		Id: task.Id,
-		Title: task.Title,
-		Due: task.Due,
-		Link: task.SelfLink,
-		Status: task.Status,
-		Notes: task.Notes,
-	}
-	m.Categories.CatList[m.catcursor].Items = append(m.Categories.CatList[m.catcursor].Items, myItem)
+	m.Categories.CatList[m.catcursor].Items = append(m.Categories.CatList[m.catcursor].Items, tsktasks.MakeItem(&task))
 }
-
-
 
 
 func (m *Model) SetCategoryString() (string) {

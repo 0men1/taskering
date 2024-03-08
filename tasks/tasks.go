@@ -65,7 +65,7 @@ func makeCategory(tasklist *tasks.TaskList, tasks []Item) Categories {
 }
 
 
-func makeItem(task *tasks.Task) Item {
+func MakeItem(task *tasks.Task) Item {
 	var t Item
 
 	tB, err := json.Marshal(task); if err != nil {
@@ -78,8 +78,6 @@ func makeItem(task *tasks.Task) Item {
 
 	return t
 }
-
-
 
 
 func FindTasks(srv *tasks.Service) (*Categories) {
@@ -100,7 +98,7 @@ func FindTasks(srv *tasks.Service) (*Categories) {
 				err)
 			}
 			for _, task := range tasks.Items {
-				allTasks = append(allTasks, makeItem(task))
+				allTasks = append(allTasks, MakeItem(task))
 			}
 			makeCategory(tasklist, allTasks)
 		}
