@@ -254,7 +254,7 @@ func (m *Model) insertItemIntoCalendar() {
 
 
 func (m *Model) insertItemIntoModel(task tasks.Task) {
-	m.Categories.CatList[m.catcursor].Items = append(m.Categories.CatList[m.catcursor].Items, tsktasks.MakeItem(&task))
+	m.Categories.CatList[m.catcursor].Items = append(m.Categories.CatList[m.catcursor].Items, &task)
 }
 
 
@@ -303,7 +303,7 @@ func (m *Model) refocus() {
 
 }
 
-func (m *Model) visibleItems() []tsktasks.Item {
+func (m *Model) visibleItems() []*tasks.Task {
 	return m.Categories.CatList[m.catcursor].Items
 }
 

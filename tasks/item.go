@@ -1,4 +1,8 @@
 package tasks
+import (
+	"google.golang.org/api/tasks/v1"
+)
+
 
 
 type Categories struct {
@@ -11,7 +15,7 @@ type Categories struct {
 type Category struct {
 	Title string
 	Id    string
-	Items []Item
+	Items []*tasks.Task
 }
 
 
