@@ -163,7 +163,6 @@ func (m *Model) Update(msg tea.Msg) (*Model, tea.Cmd) {
 				m.refocus()
 			}
 
-
 		case "+":
 			m.entryMode = true
 
@@ -173,45 +172,43 @@ func (m *Model) Update(msg tea.Msg) (*Model, tea.Cmd) {
 				m.entryMode = false
 				m.refocus()
 			}
-
-
+		}
 	}
-    }
 
 
-   return m, tea.Batch(cmds...)
+	return m, tea.Batch(cmds...)
 }
 
 
 func (m *Model) View() string {
-    s := "--------------------TODO LIST--------------------\n\n"
+	s := "--------------------TODO LIST--------------------\n\n"
 
-    s += m.SetCategoryString() + "\n\n"
+	s += m.SetCategoryString() + "\n\n"
 
 
-    for i, choice := range m.visibleItems() {
-        cursor := " " // no cursor
-        if m.cursor == i {
-            cursor = ">" // cursor!
-        }
-        checked := " " // not selected
-        if _, ok := m.selected[m.catcursor][i]; ok {
-            checked = "x" // selected!
-        }
+	for i, choice := range m.visibleItems() {
+		cursor := " " // no cursor
+		if m.cursor == i {
+		    cursor = ">" // cursor!
+		}
+		checked := " " // not selected
+		if _, ok := m.selected[m.catcursor][i]; ok {
+		    checked = "x" // selected!
+		}
 
-	s += fmt.Sprintf((" %s [%s] %s\n"), cursor, checked, choice.Title)
+		s += fmt.Sprintf((" %s [%s] %s\n"), cursor, checked, choice.Title)
 
-	t, err := time.Parse(time.RFC3339, choice.Due)
+		t, err := time.Parse(time.RFC3339, choice.Due)
 
-	if err != nil {
-		s += fmt.Sprintf("Could not get the due date!")
-	} else {
-		s += fmt.Sprintf("          Due: %s, %d %d \n\n\n", 
-		t.Month(),
-		t.Day(),
-		t.Year())
+		if err != nil {
+			s += fmt.Sprintf("Could not get the due date!")
+		} else {
+			s += fmt.Sprintf("          Due: %s, %d %d \n\n\n", 
+			t.Month(),
+			t.Day(),
+			t.Year())
+		}
 	}
-    }
 
 
 	if (m.entryMode) {
@@ -228,7 +225,6 @@ func (m *Model) View() string {
 			m.inputs[3].View(), 
 			m.inputs[4].View())
 	}
-
 	s += "\n"
 	s += "\nPress q to quit.\n"
 	return s
@@ -240,7 +236,6 @@ func (m *Model) insertItemIntoCalendar() {
 	title := m.inputs[0].Value()
 	due := m.inputs[3].Value() + "-" + m.inputs[2].Value() + "-" + m.inputs[1].Value() + "T00:00:00Z"
 	notes := m.inputs[4].Value()
-
 	myTask := &tasks.Task {
 		Title: title,
 		Due: due,
@@ -248,7 +243,6 @@ func (m *Model) insertItemIntoCalendar() {
 	}
 
 	newTask := tsktasks.InsertTask(m.Categories.CatList[m.catcursor].Id, myTask)
-
 	m.insertItemIntoModel(*newTask)
 }
 
@@ -271,11 +265,10 @@ func (m *Model) SetCategoryString() (string) {
 }
 
 
-
-
 func (m *Model) nextInput() {
 	m.inputcursor = (m.inputcursor + 1) % len(m.inputs)
 }
+
 
 func (m *Model) prevInput() {
 	m.inputcursor--
@@ -283,6 +276,7 @@ func (m *Model) prevInput() {
 		m.inputcursor = len(m.inputs) - 1
 	}
 }
+
 
 func (m *Model) refocus() {
 	for i := range m.inputs {
@@ -293,15 +287,14 @@ func (m *Model) refocus() {
 			m.inputs[i].Blur()
 		}
 	}
-
 	if !m.entryMode {
 		m.inputcursor = 0
 		m.inputs[0].Focus()
 	} else {
 		m.inputs[m.inputcursor].Focus()
 	}
-
 }
+
 
 func (m *Model) visibleItems() []*tasks.Task {
 	return m.Categories.CatList[m.catcursor].Items

@@ -10,7 +10,6 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
-	"google.golang.org/api/calendar/v3"
 	"google.golang.org/api/tasks/v1"
 	"regexp"
 )
@@ -47,13 +46,6 @@ func GetTasksSrv(ctx context.Context, opts option.ClientOption) (*tasks.Service)
 	return srv
 }
 
-
-func GetCalendarSrv(ctx context.Context, opts option.ClientOption) (*calendar.Service) {
-	srv, err := calendar.NewService(ctx, opts); if err != nil {
-		log.Fatalf("There was an error grabbing calendar service: %v", err)
-	}
-	return srv
-}
 
 func GetConfig(jsonKey []byte, scope ...string) (*oauth2.Config) {
 	conf, err := google.ConfigFromJSON(jsonKey, scope[0]); if err != nil {

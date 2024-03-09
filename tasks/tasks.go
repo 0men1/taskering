@@ -3,7 +3,6 @@ package tasks
 import (
 	"tsk/api"
 	"google.golang.org/api/tasks/v1"
-	"encoding/json"
 	"log"
 )
 
@@ -27,7 +26,6 @@ func RefreshFull() (*Categories) {
 	if task_srv == nil {
 		log.Fatalf("Task service was not initialized")
 	}
-
 	return FindTasks(task_srv)
 }
 
@@ -44,11 +42,9 @@ func MakeTask(title string, due string, notes string) (*tasks.Task) {
 
 func InsertTask(taskListId string, task *tasks.Task) *tasks.Task {
 	newTask, err := task_srv.Tasks.Insert(taskListId, task).Do()
-
 	if err != nil {
 		log.Fatalf("There was an error inserting the task: %v", err)
 	}
-
 	return newTask
 }
 
@@ -65,6 +61,7 @@ func makeCategory(tasklist *tasks.TaskList, allTasks *tasks.Tasks) Categories {
 }
 
 
+/*
 func MakeItem(task *tasks.Task) Item {
 	var t Item
 	tB, err := json.Marshal(task); if err != nil {
@@ -76,7 +73,7 @@ func MakeItem(task *tasks.Task) Item {
 	}
 	return t
 }
-
+*/
 
 func FindTasks(srv *tasks.Service) (*Categories) {
 	tasklists, err := srv.Tasklists.List().MaxResults(5).Do()
