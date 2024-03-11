@@ -324,8 +324,6 @@ func (m *Model) refocus() {
 	for i := range m.inputs {
 		if i < 5 {
 			if !m.entryMode {
-				//m.inputs[i].Blur()
-				//m.inputs[i].SetValue("")
 				m.inputs[i].Reset()
 			} else if i != m.inputcursor && m.entryMode {
 				m.inputs[i].Blur()

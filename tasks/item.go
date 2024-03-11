@@ -19,6 +19,8 @@ type Category struct {
 }
 
 
+
+/*
 type Item struct {
 	Id    		string `json:"Id"`
 	Title 		string `json:"Title"`
@@ -27,3 +29,4 @@ type Item struct {
 	Status		string `json:"Status"`// "needsAction" or "completed"
 	Notes 		string `json:"Notes"`
 }
+*/
