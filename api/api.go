@@ -12,28 +12,28 @@ import (
 	"google.golang.org/api/option"
 	"google.golang.org/api/tasks/v1"
 	"regexp"
+
 )
 
 
-
-func GetSrvs() (*tasks.Service) {
-	ctx := MakeContext()
+func GetSrvs() (*tasks.Service, error) {
+	ctx := context.Background()
 	b := ReadCreds()
 	config := GetConfig(b, tasks.TasksScope)
-	client := GetClient(config)
-	tasksrv, _ := tasks.NewService(ctx, option.WithHTTPClient(client))
-	return tasksrv
-}
+	client := GetClient(config, ctx)
+	srv, err := tasks.NewService(ctx, option.WithHTTPClient(client))
 
+	if err != nil {
+		fmt.Println("Error with getting srv: %v")
+	}
 
-func MakeContext() context.Context {
-	return context.Background()	
+	return srv, err
 }
 
 
 func ReadCreds() ([]byte) {
 	b, err := os.ReadFile("./api/credentials.json"); if err != nil {
-		log.Fatalf("Could not parse credntials.json: %v", err)
+		log.Fatalf("Could not parse credentials.json: %v", err)
 	} 	
 	return b
 }
@@ -55,7 +55,7 @@ func GetConfig(jsonKey []byte, scope ...string) (*oauth2.Config) {
 }
 
 // Retrieve a token, saves the token, then returns the generated client.
-func GetClient(config *oauth2.Config) *http.Client {
+func GetClient(config *oauth2.Config, ctx context.Context) *http.Client {
 	// The file token.json stores the user's access and refresh tokens, and is
 	// created automatically when the authorization flow completes for the first
 	// time.
@@ -65,7 +65,7 @@ func GetClient(config *oauth2.Config) *http.Client {
 		tok = GetTokenFromWeb(config)
 		SaveToken(tokFile, tok)
 	}
-	return config.Client(context.Background(), tok)
+	return config.Client(ctx, tok)
 }
 
 
@@ -83,14 +83,9 @@ func GetTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 
 	//Regex to filter key
 	r, _ := regexp.Compile("code=([^&]+)")
-
 	authCode := r.FindStringSubmatch(link)
-
 	fmt.Println(authCode[1])
-
-
 	tok, err := config.Exchange(context.TODO(), authCode[1])
-
 	if err != nil {
 		log.Fatalf("Unable to retrieve token from web: %v", err)
 	}
