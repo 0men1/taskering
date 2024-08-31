@@ -4,8 +4,6 @@ import (
 	"tsk/bubble"
 )
 
-
 func main() {
-	bubble.Run()	
+	bubble.Run()
 }
-

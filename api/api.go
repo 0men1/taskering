@@ -3,18 +3,17 @@ package api
 import (
 	"context"
 	"encoding/json"
-	"log"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
+	"regexp"
+
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
 	"google.golang.org/api/tasks/v1"
-	"regexp"
-
 )
-
 
 func GetSrvs() (*tasks.Service, error) {
 	ctx := context.Background()
@@ -24,31 +23,31 @@ func GetSrvs() (*tasks.Service, error) {
 	srv, err := tasks.NewService(ctx, option.WithHTTPClient(client))
 
 	if err != nil {
-		fmt.Println("Error with getting srv: %v")
+		fmt.Printf("Error with getting srv: %v", err)
 	}
 
 	return srv, err
 }
 
-
-func ReadCreds() ([]byte) {
-	b, err := os.ReadFile("./api/credentials.json"); if err != nil {
+func ReadCreds() []byte {
+	b, err := os.ReadFile("./api/credentials.json")
+	if err != nil {
 		log.Fatalf("Could not parse credentials.json: %v", err)
-	} 	
+	}
 	return b
 }
 
-
-func GetTasksSrv(ctx context.Context, opts option.ClientOption) (*tasks.Service) {
-	srv, err := tasks.NewService(ctx, opts); if err != nil {
+func GetTasksSrv(ctx context.Context, opts option.ClientOption) *tasks.Service {
+	srv, err := tasks.NewService(ctx, opts)
+	if err != nil {
 		log.Fatalf("There was an error grabbing tasks service: %v", err)
 	}
 	return srv
 }
 
-
-func GetConfig(jsonKey []byte, scope ...string) (*oauth2.Config) {
-	conf, err := google.ConfigFromJSON(jsonKey, scope[0]); if err != nil {
+func GetConfig(jsonKey []byte, scope ...string) *oauth2.Config {
+	conf, err := google.ConfigFromJSON(jsonKey, scope[0])
+	if err != nil {
 		log.Fatalf("There was an error fetching config: %v", err)
 	}
 	return conf
@@ -68,18 +67,16 @@ func GetClient(config *oauth2.Config, ctx context.Context) *http.Client {
 	return config.Client(ctx, tok)
 }
 
-
 // Request a token from the web, then returns the retrieved token.
 func GetTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
 	log.Printf("Go to the following link in your browser then copy paste the "+
 		"url you were redirected to.: \n%v\n", authURL)
-		
+
 	var link string
 	if _, err := fmt.Scan(&link); err != nil {
 		log.Fatalf("Unable to read authorization code: %v", err)
 	}
-	
 
 	//Regex to filter key
 	r, _ := regexp.Compile("code=([^&]+)")
@@ -119,4 +116,3 @@ func SaveToken(path string, token *oauth2.Token) {
 		panic(err)
 	}
 }
-
